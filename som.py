@@ -1,5 +1,6 @@
 import tensorflow as tf # pip install tensorflow
 import numpy as np # pip install numpy
+import pandas as pd # pip install pandas
  
 class SOM:
     def __init__(self, x, y, input_dim, learning_rate, radius, num_iter=111):
@@ -87,4 +88,6 @@ class SOM:
             for j in range(y):
                 yield np.array([i, j])
 
-
+df = pd.read_csv('heart.csv')
+#model = SOM()
+print(df)
