@@ -1,12 +1,12 @@
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
+import numpy as np  # pip install numpy
+import pandas as pd  # pip install pandas
+import matplotlib.pyplot as plt  # pip install matplotlib
+from matplotlib.colors import ListedColormap  # pip install numpy
 
 
 class SOM:
     def __init__(self, m=3, n=3, dim=3, lr=1, sigma=1, max_iter=3000):
-        # Initialize descriptive features of SOM
+        # Pasikuriam reikiamus kintamuosius
         self.m = m
         self.n = n
         self.dim = dim
@@ -16,7 +16,7 @@ class SOM:
         self.sigma = sigma
         self.max_iter = max_iter
 
-        # Initialize weights
+        # Pasikuriam svorius
         self.weights = np.random.normal(size=(m * n, dim))
         self._locations = self._get_locations(m, n)
 
@@ -24,49 +24,49 @@ class SOM:
         return np.argwhere(np.ones(shape=(m, n))).astype(np.int64)
 
     def _find_bmu(self, x):
-        # Stack x to have one row per weight
+        # Kiekvienam svoriui bus po 1 eile
         x_stack = np.stack([x]*(self.m*self.n), axis=0)
-        # Calculate distance between x and each weight
+        # Paskaiciuojam atstuma tarp x ir kiekvieno svorio
         distance = np.linalg.norm(x_stack - self.weights, axis=1)
-        # Find index of best matching unit
+        # Randam labiausiai tinkamo vieneto indeksa
         return np.argmin(distance)
 
     def step(self, x):
-        # Stack x to have one row per weight
+        # Kiekvienam svoriui bus po 1 eile
         x_stack = np.stack([x]*(self.m*self.n), axis=0)
 
-        # Get index of best matching unit
+        # Randam labiausiai tinkamo vieneto indeksa
         bmu_index = self._find_bmu(x)
 
-        # Find location of best matching unit
+        # Randam labiausiai tinkamo vieneto vieta
         bmu_location = self._locations[bmu_index, :]
 
-        # Find square distance from each weight to the BMU
+        # Randam kvadratini atstuma iki kiekvieno labiausiai tinkamo vieneto
         stacked_bmu = np.stack([bmu_location]*(self.m*self.n), axis=0)
         bmu_distance = np.sum(np.power(self._locations.astype(
             np.float64) - stacked_bmu.astype(np.float64), 2), axis=1)
 
-        # Compute update neighborhood
+        # Atnaujinam kaimynus
         neighborhood = np.exp((bmu_distance / (self.sigma ** 2)) * -1)
         local_step = self.lr * neighborhood
 
-        # Stack local step to be proper shape for update
+        # Padarome zingsni reikiamos formos
         local_multiplier = np.stack([local_step]*(self.dim), axis=1)
 
-        # Multiply by difference between input and weights
+        # Padauginam is zingsnio ir svoriu skirtumo
         delta = local_multiplier * (x_stack - self.weights)
 
-        # Update weights
+        # Atnaujinam svorius
         self.weights += delta
 
     def fit(self, X, epochs=1, shuffle=True):
-        # Count total number of iterations
+        # Paskaiciuojame iteraciju kieki
         global_iter_counter = 0
         n_samples = X.shape[0]
         total_iterations = np.minimum(epochs * n_samples, self.max_iter)
 
         for epoch in range(epochs):
-            # Break if past max number of iterations
+            # Stabdom jei baigesi iteraciju kiekis
             if global_iter_counter > self.max_iter:
                 break
 
@@ -75,15 +75,15 @@ class SOM:
             else:
                 indices = np.arange(n_samples)
 
-            # Train
+            # Apsimokymas
             for idx in indices:
-                # Break if past max number of iterations
+                # Stabdom jei baigesi iteraciju kiekis
                 if global_iter_counter > self.max_iter:
                     break
                 input = X[idx]
-                # Do one step of training
+                # Darome 1 treniravimo zingsni
                 self.step(input)
-                # Update learning rate
+                # Atnaujinam mokymosi greiti
                 global_iter_counter += 1
                 self.lr = (1 - (global_iter_counter /
                                 total_iterations)) * self.initial_lr
