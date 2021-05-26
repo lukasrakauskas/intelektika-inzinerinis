@@ -90,16 +90,15 @@ def centroids(K, b):
     plt.ylabel(b)
     plt.show()
 
-
 def euclidean(x1, y1, x2, y2):
     return math.sqrt((x1-x2)**2 + (y1-y2)**2)
-
-
-centroids(3, "chol")
-
 
 for K in range(3, 6):
     for row in rows:
         centroids(K, row)
 
-print(rows_inertia)
+x = np.arange(3, 6)
+
+for key, value in rows_inertia.items():
+    plt.plot(x, value)
+    plt.show()
