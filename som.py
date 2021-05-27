@@ -93,7 +93,7 @@ class SOM:
         return labels
 
 
-som = SOM(m=5, n=1, dim=2)
+som = SOM(m=3, n=1, dim=2)
 df = pd.read_csv('heart.csv')
 age = df['age'].to_numpy()
 thalachh = df['thalachh'].to_numpy()
@@ -105,5 +105,7 @@ y = data[:, 1]
 colors = ['red', 'green', 'blue', 'purple', 'black']
 
 plt.scatter(x, y, c=predictions, cmap=ListedColormap(colors))
-plt.title('SOM Predictions')
+plt.xlabel('age')
+plt.ylabel('thalach')
+plt.title('SOM prognozės')
 plt.show()
