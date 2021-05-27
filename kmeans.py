@@ -12,7 +12,7 @@ df = pd.read_csv('heart.csv')
 
 column = "age"
 b = "thalachh"
-rows = ["trtbps", "chol", "thalachh", "oldpeak"]
+rows = ["trtbps", "chol", "thalachh"] 
 
 
 def centroids(K, b):
@@ -75,7 +75,7 @@ def centroids(K, b):
             Si = (bi - ai) / max(bi, ai)
             silhouette_coeffs.append(Si)
 
-        silhouette[b].insert(0, silhouette_coeffs)
+        silhouette[b].insert(k, silhouette_coeffs)
 
         centroid = Centroids.iloc[k]
         total_inertia += calculate_inertia(centroid, data, column, b)
@@ -186,8 +186,9 @@ def plot_silhouette_graphs(K, silhouette_values, data, column, row):
     ax1.set_ylabel("klasteris")
 
     # The vertical line for average silhouette score of all the values
-    ax1.axvline(x=(sum(ith_cluster_silhouette_values) /
-                len(ith_cluster_silhouette_values)), color="red", linestyle="--")
+    avg = sum(ith_cluster_silhouette_values) / len(ith_cluster_silhouette_values)
+    print(column, row, K, avg)
+    ax1.axvline(x=avg, color="red", linestyle="--")
 
     ax1.set_yticks([])  # Clear the yaxis labels / ticks
     ax1.set_xticks([-0.1, 0, 0.2, 0.4, 0.6, 0.8, 1])
@@ -198,7 +199,6 @@ def plot_silhouette_graphs(K, silhouette_values, data, column, row):
         color = cm.nipy_spectral(float(i) / K)
         current_data = data[data["Cluster"] == i+1]
         Xlen += len(current_data)
-        print(i+1, len(current_data))
         ax2.scatter(current_data[column].to_numpy(), current_data[row].to_numpy(), marker='.', s=30, lw=0, alpha=0.7,
                     facecolor=color, edgecolor='k')
 
@@ -225,10 +225,12 @@ def plot_silhouette_graphs(K, silhouette_values, data, column, row):
     plt.show()
 
 
-def plot_inertia(inertia):
-    xs = np.arange(3, 3 + len(inertia))
-    print(inertia)
+def plot_inertia(inertia, row, start=3, end=6, step=1):
+    xs = np.arange(start, end, step)
     plt.plot(xs, inertia)
+    plt.title(f'Reikšmės {row} inercijos')
+    plt.ylabel('Inercija')
+    plt.xlabel('Klasterių skaičius')
     plt.show()
 
 
@@ -236,21 +238,30 @@ inertia = {
     "trtbps": [],
     "chol": [],
     "thalachh": [],
-    "oldpeak": [],
 }
 
 silhouette = {
     "trtbps": [],
     "chol": [],
     "thalachh": [],
-    "oldpeak": [],
 }
 
+# for K in range(2, 15, 2):
 for K in range(3, 6):
-    # for row in rows:
-    row = 'chol'
-    X = centroids(K, row)
-    plot_silhouette_graphs(K, silhouette[row], X, 'age', row)
+    for row in rows:
+    # row = 'thalachh'
+        X = centroids(K, row)
+        plot_silhouette_graphs(K, silhouette[row], X, 'age', row)
 
 # for row in rows:
-#     plot_inertia(inertia[row])
+    # plot_inertia(inertia[row])
+
+
+
+
+# test inertia
+# for K in range(2, 15, 2):
+#     # for row in rows:
+#     row = 'trtbps'
+#     X = centroids(K, row)
+# plot_inertia(inertia['trtbps'], 'trtbps', start=2, end=15, step=2)
