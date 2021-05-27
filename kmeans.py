@@ -1,3 +1,4 @@
+from matplotlib import colors
 import pandas as pd
 import numpy as np
 import random as rd
@@ -74,14 +75,14 @@ def centroids(K, b):
             Si = (bi - ai) / max(bi, ai)
             silhouette_coeffs.append(Si)
 
-        silhouette[b].append(silhouette_coeffs)
+        silhouette[b].insert(0, silhouette_coeffs)
 
         centroid = Centroids.iloc[k]
         total_inertia += calculate_inertia(centroid, data, column, b)
 
         # plt.scatter(data[column], data[b], c=color[k])
 
-    rows_inertia[b].append(total_inertia)
+    inertia[b].append(total_inertia)
 
     # plt.scatter(Centroids[column], Centroids[b], c='red')
     # plt.xlabel('age')
@@ -103,6 +104,7 @@ def calculate_ai(sample, data, column, row):
         ai += euclidean(x1, y1, x2, y2)
 
     return ai / len(data)
+
 
 def calculate_bi(sample, other_clusters, column, row):
     x1 = sample[column]
@@ -174,63 +176,69 @@ def plot_silhouette_graphs(K, silhouette_values, data, column, row):
                           facecolor=color, edgecolor=color, alpha=0.7)
 
         # Label the silhouette plots with their cluster numbers at the middle
-        ax1.text(-0.05, y_lower + 0.5 * size_cluster_i, str(i))
+        ax1.text(-0.05, y_lower + 0.5 * size_cluster_i, str(i + 1))
 
         # Compute the new y_lower for next plot
         y_lower = y_upper + 10  # 10 for the 0 samples
 
-    ax1.set_title("The silhouette plot for the various clusters.")
-    ax1.set_xlabel("The silhouette coefficient values")
-    ax1.set_ylabel("Cluster label")
+    ax1.set_title("Silueto koeficientų atvaizdavimas su visais klasteriais")
+    ax1.set_xlabel("Silueto koeficientų reikšmės")
+    ax1.set_ylabel("klasteris")
 
     # The vertical line for average silhouette score of all the values
-    ax1.axvline(x=(sum(ith_cluster_silhouette_values) / len(ith_cluster_silhouette_values)), color="red", linestyle="--")
+    ax1.axvline(x=(sum(ith_cluster_silhouette_values) /
+                len(ith_cluster_silhouette_values)), color="red", linestyle="--")
 
     ax1.set_yticks([])  # Clear the yaxis labels / ticks
     ax1.set_xticks([-0.1, 0, 0.2, 0.4, 0.6, 0.8, 1])
 
     # 2nd Plot showing the actual clusters formed
-    # colors = cm.nipy_spectral(float(i) / K)
+    Xlen = 0
     for i in range(K):
+        color = cm.nipy_spectral(float(i) / K)
         current_data = data[data["Cluster"] == i+1]
+        Xlen += len(current_data)
+        print(i+1, len(current_data))
         ax2.scatter(current_data[column].to_numpy(), current_data[row].to_numpy(), marker='.', s=30, lw=0, alpha=0.7,
-                 edgecolor='k')
+                    facecolor=color, edgecolor='k')
 
-        centerX = np.average(current_data[column]) 
-        centerY = np.average(current_data[row]) 
+        centerX = np.average(current_data[column])
+        centerY = np.average(current_data[row])
         ax2.scatter(centerX, centerY, marker='o',
                     c="white", alpha=1, s=200, edgecolor='k')
         ax2.scatter(centerX, centerY, marker='$%d$' % (i+1), alpha=1,
                     s=50, edgecolor='k')
 
+    ax1.set_ylim([0, Xlen + (K + 1) * 10])
     # Labeling the clusters
     # centers = clusterer.cluster_centers_
     # Draw white circles at cluster centers
 
-        
+    ax2.set_title("Klasterizavimo taškų vizualizacija")
+    ax2.set_xlabel(f"Reikšmė: {column}")
+    ax2.set_ylabel(f"Reikšmė: {row}")
 
-    ax2.set_title("The visualization of the clustered data.")
-    ax2.set_xlabel("Feature space for the 1st feature")
-    ax2.set_ylabel("Feature space for the 2nd feature")
-
-    plt.suptitle(("Silhouette analysis for KMeans clustering on sample data "
-                  "with n_clusters = %d" % K),
+    plt.suptitle(("K-vidurkių klasterizavimo silueto analizė "
+                  "kai K = %d" % K),
                  fontsize=14, fontweight='bold')
 
     plt.show()
 
 
-# centroids(3, 'chol')
-# plot_silhouette_graphs(3, len(silhouette), silhouette)
+def plot_inertia(inertia):
+    xs = np.arange(3, 3 + len(inertia))
+    print(inertia)
+    plt.plot(xs, inertia)
+    plt.show()
 
-rows_inertia = {
+
+inertia = {
     "trtbps": [],
     "chol": [],
     "thalachh": [],
     "oldpeak": [],
 }
 
-K = 3
 silhouette = {
     "trtbps": [],
     "chol": [],
@@ -238,15 +246,11 @@ silhouette = {
     "oldpeak": [],
 }
 
-X = centroids(K, 'chol')
-plot_silhouette_graphs(K, silhouette['chol'], X, 'age', 'chol')
-
-
-
-# for K in range(3, 6):
+for K in range(3, 6):
     # for row in rows:
+    row = 'chol'
+    X = centroids(K, row)
+    plot_silhouette_graphs(K, silhouette[row], X, 'age', row)
 
-
-# for key, value in rows_inertia.items():
-#     plt.plot(x, value)
-#     plt.show()
+# for row in rows:
+#     plot_inertia(inertia[row])
